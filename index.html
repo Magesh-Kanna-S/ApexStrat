@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Apex Strategy — a multi-industry business strategy simulation with role-based control, quarterly rounds, balanced scorecard scoring and Google Sheets sync.">
+<meta name="theme-color" content="#4285F4">
+<title>Apex Strategy — Strategy Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234285F4'/%3E%3Cpath d='M32 12 52 52H42.5L32 30.5 21.5 52H12z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+</head>
+<body data-theme="light">
+
+<!-- ===================== SIGN IN SCREEN ===================== -->
+<div id="authScreen" class="auth" hidden>
+  <div class="auth-brand">
+    <div class="auth-logo" aria-hidden="true">
+      <svg viewBox="0 0 64 64" width="44" height="44"><rect width="64" height="64" rx="14" fill="#4285F4"/><path d="M32 12 52 52H42.5L32 30.5 21.5 52H12z" fill="#fff"/></svg>
+    </div>
+    <h1>Apex <span class="g-blue">S</span><span class="g-red">t</span><span class="g-yellow">r</span><span class="g-green">a</span><span class="g-blue">t</span><span class="g-red">e</span><span class="g-yellow">g</span><span class="g-green">y</span></h1>
+    <p>Strategy Lab · Business simulation for teams</p>
+    <ul class="auth-points">
+      <li>Run many industries in parallel — up to 7 players per team</li>
+      <li>Quarterly decisions: product, marketing, operations, people, finance</li>
+      <li>Balanced scorecard scoring, leaderboards and downloadable reports</li>
+      <li>Role-based access: Super Admin · Manager · Team Coordinator · Player</li>
+    </ul>
+  </div>
+  <div class="auth-panel">
+    <form id="authForm" class="auth-card" novalidate>
+      <h2>Sign in</h2>
+      <p class="muted">Use your Apex Strategy account.</p>
+      <label class="fld"><span>Email</span>
+        <input type="email" id="authEmail" autocomplete="username" placeholder="you@college.edu" required>
+      </label>
+      <label class="fld"><span>Password</span>
+        <input type="password" id="authPass" autocomplete="current-password" placeholder="••••••••" required>
+      </label>
+      <div id="authErr" class="form-err" hidden></div>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+      <div class="auth-demo">
+        <span>Demo accounts (password <code>Apex@123</code>)</span>
+        <div class="demo-row">
+          <button type="button" class="chipbtn" data-demo="superadmin@apex.app">Super Admin</button>
+          <button type="button" class="chipbtn" data-demo="manager@apex.app">Manager</button>
+          <button type="button" class="chipbtn" data-demo="coordinator@apex.app">Coordinator</button>
+          <button type="button" class="chipbtn" data-demo="player@apex.app">Player</button>
+        </div>
+      </div>
+    </form>
+    <p class="auth-foot">Runs fully in the browser · Optional Google Sheets database · <span id="authVersion"></span></p>
+  </div>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="app" hidden>
+  <header class="topbar">
+    <button id="menuBtn" class="iconbtn" title="Toggle menu (Ctrl+B)" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/></svg>
+    </button>
+    <a class="brand" href="#/dashboard" id="brandLink">
+      <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#4285F4"/><path d="M32 12 52 52H42.5L32 30.5 21.5 52H12z" fill="#fff"/></svg>
+      <span class="brand-t">Apex <b>Strategy</b><small>Strategy Lab</small></span>
+    </a>
+    <div class="top-mid" id="topContext"></div>
+    <div class="top-right">
+      <span id="syncBadge" class="sync-badge" hidden></span>
+      <span id="deadlineChip" class="deadline-chip" hidden></span>
+      <button id="themeBtn" class="iconbtn" title="Light / dark theme" aria-label="Toggle theme">
+        <svg class="ic-dark" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+        <svg class="ic-light" viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-6h.02M11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.2 4.2l2.1 2.1-1.4 1.4L2.8 5.6zm12.4 12.4 2.1 2.1-1.4 1.4-2.1-2.1zM4.2 19.8l2.1-2.1 1.4 1.4-2.1 2.1zM16.6 7.4l2.1-2.1 1.4 1.4-2.1 2.1z" fill-rule="evenodd"/></svg>
+      </button>
+      <div class="avatar-wrap">
+        <button id="avatarBtn" class="avatar" aria-label="Account menu">A</button>
+        <div id="avatarMenu" class="popmenu" hidden>
+          <div class="popmenu-head"><b id="amName"></b><small id="amEmail"></small><span id="amRole" class="roletag"></span></div>
+          <button class="popmenu-item" data-nav="#/password">Change password</button>
+          <button class="popmenu-item" data-nav="#/guide">Learner guide</button>
+          <hr>
+          <button class="popmenu-item danger" id="logoutBtn">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="scrim" id="scrim"></div>
+
+  <aside class="drawer" id="drawer" aria-label="Main navigation">
+    <nav id="navRoot"></nav>
+    <div class="drawer-foot">
+      <div id="drawerIndustry" class="drawer-industry" hidden></div>
+      <div id="drawerSync" class="drawer-sync"></div>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <div id="page" class="page"></div>
+    <footer class="foot">Apex Strategy · Strategy Lab <span id="footVersion"></span> · Built by Magesh Kanna S</footer>
+  </main>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<div id="modalRoot"></div>
+<iframe id="printFrame" title="Print" style="position:fixed;width:0;height:0;border:0;visibility:hidden"></iframe>
+
+<script src="chart.umd.min.js"></script>
+<script src="js/util.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/sheets.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pages-core.js"></script>
+<script src="js/pages-results.js"></script>
+<script src="js/pages-decide.js"></script>
+<script src="js/pages-admin.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
